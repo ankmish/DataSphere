@@ -71,6 +71,22 @@ public class RuleDao {
         ruleCollection.deleteOne(query);
     }
 
+    public Rule findRuleById(String ruleId) {
+        ObjectId objectId;
+        try {
+            objectId = new ObjectId(ruleId);
+        } catch (IllegalArgumentException e) {
+            return null; // Invalid ObjectId format, return null
+        }
+
+        Document query = new Document("_id", objectId);
+        Document ruleDocument = ruleCollection.find(query).first();
+        if (ruleDocument != null) {
+            return ruleFromDocument(ruleDocument);
+        }
+        return null;
+    }
+
     private Rule ruleFromDocument(Document ruleDocument) {
         ObjectId id = ruleDocument.getObjectId("_id");
         String name = ruleDocument.getString("name");

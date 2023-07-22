@@ -1,5 +1,6 @@
 package com.data.collector.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,11 +11,9 @@ import org.bson.types.ObjectId;
 @AllArgsConstructor
 public class FormResponseDTO {
 
-    private ObjectId ruleId;
+    private List<ObjectId> ruleIds;
     private String partnerId;
-    private String formId;
-    private String questionId;
+    private String formId; // unique id per form between tenant and SaaS
+    private List<QuestionAnswerDTO> questionAnswers;
     private String answer;
-
-    // Getters and setters
 }
