@@ -1,6 +1,6 @@
 package com.data.collector.controllers;
 
-import com.data.collector.dto.FormResponseDTO;
+import com.data.collector.dto.FormRequestDTO;
 import com.data.collector.services.FormService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/data-sphere/form")
 public class FormController {
 
-    @Autowired
     private FormService formService;
+    public FormController(FormService formService) {
+        this.formService = formService;
+    }
 
     @PostMapping("/submit")
-    public ResponseEntity<String> submitFormResponse(@RequestBody FormResponseDTO formResponse) {
-        formService.saveFormResponse(formResponse);
-        return new ResponseEntity<>("Form response saved successfully.", HttpStatus.CREATED);
+    public ResponseEntity<String> submitFormResponse(@RequestBody FormRequestDTO formRequest) {
+        formService.saveFormResponse(formRequest);
+        return new ResponseEntity<>("Form submitted successfully.", HttpStatus.CREATED);
     }
 }
 

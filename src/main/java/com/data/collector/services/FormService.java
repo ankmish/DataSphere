@@ -1,13 +1,11 @@
 package com.data.collector.services;
 
 import com.data.collector.dao.FormResponseDao;
-import com.data.collector.dao.RuleDao;
-import com.data.collector.dto.FormResponseDTO;
+import com.data.collector.dto.FormRequestDTO;
 import com.data.collector.dto.QuestionAnswerDTO;
 import com.data.collector.models.Rule;
 import com.data.collector.utils.GoogleSheetsIntegration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,13 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class FormService {
 
-    @Autowired
     private FormResponseDao formResponseDao;
 
-    @Autowired
     private RuleService ruleService;
 
-    @Autowired
     private SmsService smsService;
 
     @Value("${sms.apiKey}") // Load the apiKey value from properties or configuration
@@ -39,7 +34,10 @@ public class FormService {
     List<String> slangsForCity2;
 
 
-    public FormService() {
+    public FormService(FormResponseDao formResponseDao, RuleService ruleService, SmsService smsService) {
+        this.formResponseDao = formResponseDao;
+        this.ruleService = ruleService;
+        this.smsService = smsService;
         this.slangDictionary = new HashMap<>();
         this.slangsForCity1 = new ArrayList<>();
         this.slangsForCity2 = new ArrayList<>();
@@ -52,13 +50,13 @@ public class FormService {
         slangDictionary.put("City2", slangsForCity2);
     }
 
-    public void saveFormResponse(FormResponseDTO formResponse) {
-        formResponseDao.saveFormResponse(formResponse);
-        // Take action based on the applied rule // TODO: this should be Kafka event that is published an other service will do the processing]]
-        List<String> ruleIds = getRuleIdsForForm(formResponse.getFormId());
+    public void saveFormResponse(FormRequestDTO formRequest) {
+        formResponseDao.saveFormResponse(formRequest);
+        // Take action based on the applicable rule // TODO: this should be Kafka event that is published an other service will do the processing]]
+        List<String> ruleIds = getRuleIdsForForm(formRequest.getFormId());
         List<Rule> rules = ruleService.getRulesByIds(ruleIds);
         if (rules != null) {
-            executeRuleAction(rules, formResponse);
+            executeRuleAction(rules, formRequest);
         }
     }
 
@@ -66,13 +64,11 @@ public class FormService {
         return formResponseDao.findRuleIdsByFormId(formId);
     }
 
-    private void executeRuleAction(List<Rule> rules, FormResponseDTO formResponse) {
+    private void executeRuleAction(List<Rule> rules, FormRequestDTO formResponse) {
         for (Rule rule : rules) {
             if ("MonthlySavingsValidation".equals(rule.getName())) {
-                // Check if monthly savings are greater than monthly income
                 double monthlySavings = getMonthlySavings(formResponse);
                 double monthlyIncome = getMonthlyIncome(formResponse);
-
                 if (monthlySavings > monthlyIncome) {
                     // Rule triggered: Monthly savings cannot be more than monthly income
                     // TODO: trigger the actions accordingly
@@ -81,7 +77,6 @@ public class FormService {
                 // Take action for the "Search Slangs" rule
                 List<String> slangs = searchSlangs(formResponse);
                 if (!slangs.isEmpty()) {
-                    // Perform the action (you can choose how to handle the slangs)
                     handleSlangs(slangs, formResponse);
                 }
             } else if ("Google Sheets Integration".equals(rule.getName())) {
@@ -95,14 +90,14 @@ public class FormService {
                 // Take action for Customer Receipt SMS rule
                 // Implement code to send an SMS to the customer with response details as a receipt
                 // Use an SMS service or provider to send the SMS
-                String recipientPhoneNumber = "+123456789"; // Replace with the actual recipient's phone number
-                String message = "Thank you for participating! Here are your details: " + formResponse.getAnswer();
+                String recipientPhoneNumber = "+918304059831"; // Replace with the actual recipient's phone number
+                String message = "Thank you for participating! Here are your details: " + formResponse.getQuestionAnswers();
                 smsService.sendSms(recipientPhoneNumber, message);
             }
         }
     }
 
-    private double getMonthlySavings(FormResponseDTO formResponse) {
+    private double getMonthlySavings(FormRequestDTO formResponse) {
         // Assuming the monthly savings is stored in the response with the questionId "monthlySavings"
         String monthlySavingsString = null;
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
@@ -121,7 +116,7 @@ public class FormService {
     }
 
 
-    private double getMonthlyIncome(FormResponseDTO formResponse) {
+    private double getMonthlyIncome(FormRequestDTO formResponse) {
         // Assuming the monthly income is stored in the response with the questionId "monthlyIncome"
         String monthlyIncomeString = null;
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
@@ -141,7 +136,7 @@ public class FormService {
 
 
 
-    private List<String> searchSlangs(FormResponseDTO formResponse) {
+    private List<String> searchSlangs(FormRequestDTO formResponse) {
         // Get the answer to the text question
         String textAnswer = null;
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
@@ -174,7 +169,7 @@ public class FormService {
     }
 
 
-    private void handleSlangs(List<String> slangs, FormResponseDTO formResponse) {
+    private void handleSlangs(List<String> slangs, FormRequestDTO formResponse) {
         // Perform the action for the found slangs (e.g., notify someone or store the information)
         // Example action: Print the found slangs
         System.out.println("Found slangs: " + slangs);

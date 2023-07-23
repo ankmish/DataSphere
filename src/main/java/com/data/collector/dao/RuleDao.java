@@ -20,7 +20,7 @@ public class RuleDao {
     @Autowired
     public RuleDao(MongoClient mongoClient, String databaseName) {
         MongoDatabase saasDB = mongoClient.getDatabase(databaseName);
-        this.ruleCollection = saasDB.getCollection("rule");
+        this.ruleCollection = saasDB.getCollection("rules");
     }
 
     public Rule saveRule(Rule rule) {

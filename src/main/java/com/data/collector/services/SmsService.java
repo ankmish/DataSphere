@@ -1,18 +1,15 @@
 package com.data.collector.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SmsService {
+    @Value("${sms.apiKey}") // Load the apiKey value from properties or configuration
+    private String apiKey;
 
-    // Replace these fields with your actual SMS service provider credentials
-    private final String apiKey;
-    private final String apiSecret;
-
-    public SmsService(String apiKey, String apiSecret) {
-        this.apiKey = apiKey;
-        this.apiSecret = apiSecret;
-    }
+    @Value("${sms.apiSecret}") // Load the apiSecret value from properties or configuration
+    private String apiSecret;
 
     public void sendSms(String recipientPhoneNumber, String message) {
         // Implement your integration with an SMS service provider here
