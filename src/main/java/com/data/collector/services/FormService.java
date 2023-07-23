@@ -90,7 +90,7 @@ public class FormService {
                 // Take action for Customer Receipt SMS rule
                 // Implement code to send an SMS to the customer with response details as a receipt
                 // Use an SMS service or provider to send the SMS
-                String recipientPhoneNumber = "+918707049831"; // Replace with the actual recipient's phone number
+                String recipientPhoneNumber = "+918304059831"; // Replace with the actual recipient's phone number
                 String message = "Thank you for participating! Here are your details: " + formResponse.getQuestionAnswers();
                 smsService.sendSms(recipientPhoneNumber, message);
             }
