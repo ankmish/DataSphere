@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SmsService {
-
     @Value("${sms.apiKey}") // Load the apiKey value from properties or configuration
     private String apiKey;
 
