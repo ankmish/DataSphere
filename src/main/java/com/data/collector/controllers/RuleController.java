@@ -32,9 +32,7 @@ public class RuleController {
 
 }
 
-
 /*
-
 POST /api/rules/partner1
 
 {
@@ -66,6 +64,13 @@ POST /api/rules/partner4
   "name": "Customer Receipt SMS",
   "condition": "true", // Here, the condition is always true, indicating that this rule applies to all responses.
   "action": "Send an SMS to the customer with response details as a receipt."
+}
+
+
+{
+    "name": "MonthlySavingsValidation",
+    "condition": "monthlySavings > monthlyIncome",
+    "action": "TRIGGER_NOTIFICATION_WITH_USER_DETAILS"
 }
 
 
