@@ -10,28 +10,28 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FormService {
 
-    private FormResponseDao formResponseDao;
+    public static final String MONTHLY_SAVINGS_VALIDATION = "MonthlySavingsValidation";
+    public static final String SEARCH_SLANGS = "SearchSlangs";
+    public static final String GOOGLE_SHEETS_INTEGRATION = "GoogleSheetsIntegration";
+    public static final String CITIES = "cities";
+    public static final String CUSTOMER_RECEIPT_SMS = "CustomerReceiptSMS";
+    private final FormResponseDao formResponseDao;
 
-    private RuleService ruleService;
+    private final RuleService ruleService;
 
-    private SmsService smsService;
-
-    @Value("${sms.apiKey}") // Load the apiKey value from properties or configuration
-    private String apiKey;
-
-    @Value("${sms.apiSecret}") // Load the apiSecret value from properties or configuration
-    private String apiSecret;
+    private final SmsService smsService;
 
     Map<String, List<String>> slangDictionary;
-    List<String> slangsForCity1;
-    List<String> slangsForCity2;
+    List<String> slangsForCity;
+
+    static final Logger logger = Logger.getLogger(String.valueOf(FormService.class));
 
 
     public FormService(FormResponseDao formResponseDao, RuleService ruleService, SmsService smsService) {
@@ -39,24 +39,39 @@ public class FormService {
         this.ruleService = ruleService;
         this.smsService = smsService;
         this.slangDictionary = new HashMap<>();
-        this.slangsForCity1 = new ArrayList<>();
-        this.slangsForCity2 = new ArrayList<>();
-        slangsForCity1.add("slang1");
-        slangsForCity1.add("slang2");
-        slangDictionary.put("City1", slangsForCity1);
-        slangsForCity2.add("slang3");
-        slangsForCity2.add("slang4");
-        slangsForCity2.add("slang5");
-        slangDictionary.put("City2", slangsForCity2);
+        this.slangsForCity = new ArrayList<>();
+        slangsForCity.add("Namaste");
+        slangsForCity.add("Hi");
+        slangDictionary.put("Hello", slangsForCity);
     }
 
-    public void saveFormResponse(FormRequestDTO formRequest) {
+    public void saveFormResponse(FormRequestDTO formRequest) throws Exception {
+        logger.info("Form submission request received for partner: " + formRequest.getPartnerId() + " with formId: " + formRequest.getFormId());
+        // validate if duplicate form request
+        validateFormSubmissionRequest(formRequest);
         formResponseDao.saveFormResponse(formRequest);
-        // Take action based on the applicable rule // TODO: this should be Kafka event that is published an other service will do the processing]]
+        logger.info("Form submitted successfully for partner: " + formRequest.getPartnerId() + " with formId: " + formRequest.getFormId() + " publishing event for post analysis");
+        publishFormEvent(formRequest);
+    }
+
+    // This will be Kafka event which will be consumed by another microservice(rule-engine) to apply rules as per rule action
+    private void publishFormEvent(FormRequestDTO formRequest) {
         List<String> ruleIds = getRuleIdsForForm(formRequest.getFormId());
-        List<Rule> rules = ruleService.getRulesByIds(ruleIds);
+        if(ruleIds.isEmpty()) {
+            logger.info("FormId: " + formRequest.getFormId() + " from partner: " + formRequest.getPartnerId() + " no action has to be taken");
+            return;
+        }
+        List<Rule> rules = ruleService.getRulesByIdsAndPartnerId(ruleIds, formRequest.getPartnerId());
         if (rules != null) {
             executeRuleAction(rules, formRequest);
+        }
+
+    }
+
+    private void validateFormSubmissionRequest(FormRequestDTO formRequest) throws Exception {
+        List<Document> forms = formResponseDao.findFormByFormId(formRequest.getFormId());
+        if(!forms.isEmpty()) {
+            throw new Exception("Duplicate form submission request for formId: " + formRequest.getFormId() + " from partner: " + formRequest.getPartnerId());
         }
     }
 
@@ -64,33 +79,30 @@ public class FormService {
         return formResponseDao.findRuleIdsByFormId(formId);
     }
 
+    // This function will be part of rule-engine service
     private void executeRuleAction(List<Rule> rules, FormRequestDTO formResponse) {
+        logger.info("Rule Engine: FormId: " + formResponse.getFormId() + " from partner: " + formResponse.getPartnerId() + " number of applicable rules: " + rules.size());
         for (Rule rule : rules) {
-            if ("MonthlySavingsValidation".equals(rule.getName())) {
+            if (MONTHLY_SAVINGS_VALIDATION.equals(rule.getName())) {
                 double monthlySavings = getMonthlySavings(formResponse);
                 double monthlyIncome = getMonthlyIncome(formResponse);
                 if (monthlySavings > monthlyIncome) {
-                    // Rule triggered: Monthly savings cannot be more than monthly income
-                    // TODO: trigger the actions accordingly
+                    logger.info("Rule Engine: FormId: " + formResponse.getFormId() + " from partner: " + formResponse.getPartnerId() + " MONTHLY_SAVINGS_VALIDATION rule triggered, inform partner.");
                 }
-            } else if ("Search Slangs".equals(rule.getName())) {
-                // Take action for the "Search Slangs" rule
+            } else if (SEARCH_SLANGS.equals(rule.getName())) {
                 List<String> slangs = searchSlangs(formResponse);
                 if (!slangs.isEmpty()) {
-                    handleSlangs(slangs, formResponse);
+                    logger.info("Rule Engine: FormId: " + formResponse.getFormId() + " from partner: " + formResponse.getPartnerId() + " SEARCH_SLANGS rule triggered, return slangs list : " + slangs);
                 }
-            } else if ("Google Sheets Integration".equals(rule.getName())) {
+            } else if (GOOGLE_SHEETS_INTEGRATION.equals(rule.getName())) {
                 // Take action for Google Sheets Integration rule
                 // Implement code to export formResponse data to Google Sheets and generate graphs/charts
                 // You might use Google Sheets API or other integration methods
                 // Take action for Google Sheets Integration rule
                 GoogleSheetsIntegration.exportToGoogleSheets(formResponse);
                 System.out.println("Exporting form response to Google Sheets and generating graphs...");
-            } else if ("Customer Receipt SMS".equals(rule.getName())) {
-                // Take action for Customer Receipt SMS rule
-                // Implement code to send an SMS to the customer with response details as a receipt
-                // Use an SMS service or provider to send the SMS
-                String recipientPhoneNumber = "+918304059831"; // Replace with the actual recipient's phone number
+            } else if (CUSTOMER_RECEIPT_SMS.equals(rule.getName())) {
+                String recipientPhoneNumber = "+918304059831";
                 String message = "Thank you for participating! Here are your details: " + formResponse.getQuestionAnswers();
                 smsService.sendSms(recipientPhoneNumber, message);
             }
@@ -137,43 +149,16 @@ public class FormService {
 
 
     private List<String> searchSlangs(FormRequestDTO formResponse) {
-        // Get the answer to the text question
         String textAnswer = null;
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
-            if (questionAnswer.getQuestionId().equals("cities")) {  // identifier for questions // TODO: make generic
+            if (questionAnswer.getQuestionId().equals(CITIES)) {
                 textAnswer = questionAnswer.getAnswer();
                 break;
             }
         }
-
         if (textAnswer == null) {
-            // Text question not found in the form response
             return Collections.emptyList();
         }
-
-        // Perform slang search logic based on the text answer and cities
-        List<String> slangs = new ArrayList<>();
-        // Example logic: Search for slangs in the text answer based on the cities
-        // (You can replace this with your actual logic for slang search)
-        // Example: Assuming the slangs are stored in a dictionary (HashMap) with city as the key
-        // and the list of slangs as the value
-        List<String> slangsForCity = slangDictionary.get(textAnswer);
-        if (slangsForCity != null) {
-            for (String slang : slangsForCity) {
-                if (textAnswer.contains(slang)) {
-                    slangs.add(slang);
-                }
-            }
-        }
-        return slangs;
+        return slangDictionary.get(textAnswer);
     }
-
-
-    private void handleSlangs(List<String> slangs, FormRequestDTO formResponse) {
-        // Perform the action for the found slangs (e.g., notify someone or store the information)
-        // Example action: Print the found slangs
-        System.out.println("Found slangs: " + slangs);
-    }
-
-    // Rest of the DAO methods using the MongoClient
 }

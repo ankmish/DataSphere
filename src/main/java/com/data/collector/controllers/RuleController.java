@@ -25,54 +25,9 @@ public class RuleController {
 
 
     @PostMapping("/{partnerId}")
-    public ResponseEntity<Rule> createRule(@PathVariable String partnerId, @RequestBody RuleDTO ruleDTO) {
+    public ResponseEntity<Rule> createRule(@PathVariable String partnerId, @RequestBody RuleDTO ruleDTO) throws Exception {
         Rule createdRule = ruleService.createRule(partnerId, ruleDTO);
         return new ResponseEntity<>(createdRule, HttpStatus.CREATED);
     }
 
 }
-
-/*
-POST /api/rules/partner1
-
-{
-  "name": "Slangs Search Rule",
-  "condition": "contains(slangs, city)",
-  "action": "search for slangs in local language based on the city"
-}
-
-POST /api/rules/partner2
-
-{
-  "name": "Business Rules Validation",
-  "condition": "monthlySavings > monthlyIncome",
-  "action": "Flag response for fixing: Monthly savings cannot be more than monthly income."
-}
-
-
-POST /api/rules/partner3
-
-{
-  "name": "Google Sheets Integration",
-  "condition": "true", // Here, the condition is always true, indicating that this rule applies to all responses.
-  "action": "Export response data to Google Sheets and generate graphs/charts."
-}
-
-POST /api/rules/partner4
-
-{
-  "name": "Customer Receipt SMS",
-  "condition": "true", // Here, the condition is always true, indicating that this rule applies to all responses.
-  "action": "Send an SMS to the customer with response details as a receipt."
-}
-
-
-{
-    "name": "MonthlySavingsValidation",
-    "condition": "monthlySavings > monthlyIncome",
-    "action": "TRIGGER_NOTIFICATION_WITH_USER_DETAILS"
-}
-
-
-
- */

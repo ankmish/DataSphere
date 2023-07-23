@@ -5,12 +5,17 @@ import com.data.collector.dto.RuleDTO;
 import com.data.collector.models.Rule;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Rule operation related endpoint
+ */
 @Service
 public class RuleService {
 
+    static final Logger logger = Logger.getLogger(String.valueOf(RuleService.class));
     private final RuleDao ruleDao;
 
     @Autowired
@@ -18,7 +23,9 @@ public class RuleService {
         this.ruleDao = ruleDao;
     }
 
-    public Rule createRule(String partnerId, RuleDTO ruleDTO) {
+    public Rule createRule(String partnerId, RuleDTO ruleDTO) throws Exception {
+        logger.info("Rule creation request received from partner: " + partnerId + " with name: " + ruleDTO.getName());
+        validateRuleCreationRequest(partnerId, ruleDTO);
         Rule rule = new Rule();
         rule.setName(ruleDTO.getName());
         rule.setCondition(ruleDTO.getCondition());
@@ -27,10 +34,18 @@ public class RuleService {
         return ruleDao.saveRule(rule);
     }
 
-    public List<Rule> getRulesByIds(List<String> ruleIds) {
+    private void validateRuleCreationRequest(String partnerId, RuleDTO ruleDTO) throws Exception {
+        List<Rule> rules = ruleDao.findRuleByNameAndPartnerId(ruleDTO.getName(), partnerId);
+        if(!rules.isEmpty()) {
+            throw new Exception("Rule: " + ruleDTO.getName() + " already exists for partner: " + partnerId);
+        }
+    }
+
+    public List<Rule> getRulesByIdsAndPartnerId(List<String> ruleIds, String partnerId) {
+        logger.info("Fetching rules from partner: " + partnerId + " for rulesIds");
         List<Rule> appliedRules = new ArrayList<>();
         for (String ruleId : ruleIds) {
-            Rule rule = ruleDao.findRuleById(ruleId);
+            Rule rule = ruleDao.findRuleByIdAndPartner(ruleId, partnerId);
             if (rule != null) {
                 appliedRules.add(rule);
             }
