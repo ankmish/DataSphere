@@ -16,7 +16,7 @@ public class MongoConfig {
 
     @Bean
     public String databaseName() {
-        return "my_saas_db"; // Your MongoDB database name
+        return "data_sphere_db"; // Your MongoDB database name
     }
 
     @Bean

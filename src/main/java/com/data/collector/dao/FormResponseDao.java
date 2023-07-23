@@ -1,8 +1,7 @@
 package com.data.collector.dao;
 
-import com.data.collector.dto.FormResponseDTO;
+import com.data.collector.dto.FormRequestDTO;
 import com.data.collector.dto.QuestionAnswerDTO;
-import com.data.collector.models.Rule;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -38,7 +37,7 @@ public class FormResponseDao {
         this.formResponseCollection = saasDB.getCollection(formResponsesCollection);
     }
 
-    public void saveFormResponse(FormResponseDTO formResponse) {
+    public void saveFormResponse(FormRequestDTO formResponse) {
         List<Document> questionAnswerDocuments = new ArrayList<>();
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
             Document questionAnswerDocument = new Document("question_id", questionAnswer.getQuestionId())
@@ -49,7 +48,6 @@ public class FormResponseDao {
 
         Document formResponseDocument = new Document("partner_id", formResponse.getPartnerId())
                 .append("form_id", formResponse.getFormId())
-                .append("answer", formResponse.getAnswer())
                 .append("rule_ids", formResponse.getRuleIds() != null ? formResponse.getRuleIds() : null) // Reference to the applied rule, multiple rules can be applied to it [assuming, order stored from left to right]
                 .append("question_answers", questionAnswerDocuments);
         formResponseCollection.insertOne(formResponseDocument);

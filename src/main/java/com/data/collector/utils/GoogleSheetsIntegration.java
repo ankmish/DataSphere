@@ -1,7 +1,7 @@
 package com.data.collector.utils;
 
 import com.data.collector.clients.GoogleSheetsClient;
-import com.data.collector.dto.FormResponseDTO;
+import com.data.collector.dto.FormRequestDTO;
 import com.data.collector.dto.QuestionAnswerDTO;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -18,7 +18,7 @@ public class GoogleSheetsIntegration {
     // Replace SPREADSHEET_ID with your Google Sheets spreadsheet ID
     private static final String SPREADSHEET_ID = "your_spreadsheet_id";
 
-    public static void exportToGoogleSheets(FormResponseDTO formResponse) {
+    public static void exportToGoogleSheets(FormRequestDTO formResponse) {
         try {
             // Get the authenticated credentials
             Credential credentials = GoogleSheetsClient.getCredentials();
@@ -69,7 +69,7 @@ public class GoogleSheetsIntegration {
         }
     }
 
-    private static String getAnswerForQuestion(FormResponseDTO formResponse, String questionId) {
+    private static String getAnswerForQuestion(FormRequestDTO formResponse, String questionId) {
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
             if (questionAnswer.getQuestionId().equals(questionId)) {
                 return questionAnswer.getAnswer();

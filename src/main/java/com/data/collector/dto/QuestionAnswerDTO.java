@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class QuestionAnswerDTO {
 
     private String questionId;
-
     private String question;
     private String answer;
 }
