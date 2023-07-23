@@ -77,4 +77,55 @@ MongoDB was chosen over a traditional relational database management system (RDB
 
 **Note**: As per assumption, partners are already onboarded hence not considering DB choice for that (we can use RDMS for partner(s) onboarding related data).
 
-   
+## How to run the code?
+1. Install java 17 and maven.
+2. Run the `GoogleSheetsIntegration.java` file.
+3. Change **connectionStr** in `MongoConfig.java` file to your MongoDB cluster url.
+4. Change credentials in **google-sheets-client-secret.json** to execute Google Sheet API integration.
+
+## Endpoints curl:
+1. **Rule Creation**:
+```
+curl --location 'localhost:8081/data-sphere/rule/4' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--header 'Cookie: JSESSIONID=053F79184D6FC584E8E1A7EE30291F0E' \
+--data '{
+    "name": "CUSTOMER_RECEIPT_SMS",
+    "condition": "",
+    "action": "SEND_SMS_TO_USER"
+}'
+```
+2. **Form submission**:
+```
+curl --location 'localhost:8081/data-sphere/form/submit' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: JSESSIONID=053F79184D6FC584E8E1A7EE30291F0E' \
+--data '{
+    "ruleIds": ["64bcdab7049f3b3a91b0bb3a"],
+    "partnerId": "3",
+    "formId": "googleSheetInt128",
+    "questionAnswers": [
+        {
+            "questionId": "ZZZZZXXX",
+            "question": "How to greet in English?",
+            "answer": "Hello"
+        },
+        {
+            "questionId": "gk1",
+            "question": "What is captial of India?",
+            "answer": "New Delhi"
+        },
+        {
+            "questionId": "gk2",
+            "question": "How to greet in Hindi?",
+            "answer": "Namaste"
+        },
+        {
+            "questionId": "gk3",
+            "question": "What is captial of UP?",
+            "answer": "Lucknow"
+        }
+    ]
+}'
+```   
