@@ -17,13 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class FormService {
 
-    @Autowired
     private FormResponseDao formResponseDao;
 
-    @Autowired
     private RuleService ruleService;
 
-    @Autowired
     private SmsService smsService;
 
     @Value("${sms.apiKey}") // Load the apiKey value from properties or configuration
@@ -37,7 +34,10 @@ public class FormService {
     List<String> slangsForCity2;
 
 
-    public FormService() {
+    public FormService(FormResponseDao formResponseDao, RuleService ruleService, SmsService smsService) {
+        this.formResponseDao = formResponseDao;
+        this.ruleService = ruleService;
+        this.smsService = smsService;
         this.slangDictionary = new HashMap<>();
         this.slangsForCity1 = new ArrayList<>();
         this.slangsForCity2 = new ArrayList<>();

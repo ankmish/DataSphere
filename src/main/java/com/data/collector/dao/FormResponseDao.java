@@ -17,9 +17,6 @@ public class FormResponseDao {
 
     private final MongoClient mongoClient;
 
-    private final RuleDao ruleDao;
-
-
     private final String databaseName;
     private final String formResponsesCollection;
 
@@ -32,7 +29,6 @@ public class FormResponseDao {
         this.mongoClient = mongoClient;
         this.databaseName = databaseName;
         this.formResponsesCollection = formResponsesCollection;
-        this.ruleDao = ruleDao;
         this.saasDB = mongoClient.getDatabase(databaseName);
         this.formResponseCollection = saasDB.getCollection(formResponsesCollection);
     }

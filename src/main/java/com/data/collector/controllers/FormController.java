@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/data-sphere/form")
 public class FormController {
 
-    @Autowired
     private FormService formService;
+    public FormController(FormService formService) {
+        this.formService = formService;
+    }
 
     @PostMapping("/submit")
     public ResponseEntity<String> submitFormResponse(@RequestBody FormRequestDTO formRequest) {
