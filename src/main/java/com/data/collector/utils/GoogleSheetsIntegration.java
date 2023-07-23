@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This is to inject data into google sheet
+ */
 public class GoogleSheetsIntegration {
 
     // Replace SPREADSHEET_ID with your Google Sheets spreadsheet ID
@@ -22,7 +25,6 @@ public class GoogleSheetsIntegration {
     public static void exportToGoogleSheets(FormRequestDTO formResponse) {
         try {
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            // Get the authenticated credentials
             Credential credentials = GoogleSheetsClient.getCredentials(HTTP_TRANSPORT);
             Sheets sheetsService = new Sheets.Builder(HTTP_TRANSPORT, GoogleSheetsClient.JSON_FACTORY, credentials)
                     .setApplicationName(GoogleSheetsClient.APPLICATION_NAME)
@@ -45,7 +47,7 @@ public class GoogleSheetsIntegration {
             rowData.add(formResponse.getFormId());
             for (Object questionId : headerRow.subList(1, headerRow.size())) {
                 String answer = getAnswerForQuestion(formResponse, questionId.toString());
-                rowData.add(answer != null ? answer : ""); // Add the answer to the data row
+                rowData.add(answer != null ? answer : "");
             }
             data.add(rowData);
 

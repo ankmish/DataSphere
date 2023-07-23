@@ -66,7 +66,6 @@ public class FormResponseDao {
 
     public List<Document> findFormByFormId(String formId) {
         Document query = new Document("form_id", formId);
-        List<Document> formResponses = formResponseCollection.find(query).into(new ArrayList<>());
-        return formResponses;
+        return formResponseCollection.find(query).into(new ArrayList<>());
     }
 }

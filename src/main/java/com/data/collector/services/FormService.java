@@ -95,10 +95,6 @@ public class FormService {
                     logger.info("Rule Engine: FormId: " + formResponse.getFormId() + " from partner: " + formResponse.getPartnerId() + " SEARCH_SLANGS rule triggered, return slangs list : " + slangs);
                 }
             } else if (GOOGLE_SHEETS_INTEGRATION.equals(rule.getName())) {
-                // Take action for Google Sheets Integration rule
-                // Implement code to export formResponse data to Google Sheets and generate graphs/charts
-                // You might use Google Sheets API or other integration methods
-                // Take action for Google Sheets Integration rule
                 GoogleSheetsIntegration.exportToGoogleSheets(formResponse);
                 System.out.println("Exporting form response to Google Sheets and generating graphs...");
             } else if (CUSTOMER_RECEIPT_SMS.equals(rule.getName())) {
@@ -110,7 +106,6 @@ public class FormService {
     }
 
     private double getMonthlySavings(FormRequestDTO formResponse) {
-        // Assuming the monthly savings is stored in the response with the questionId "monthlySavings"
         String monthlySavingsString = null;
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
             if ("monthlySavings".equals(questionAnswer.getQuestionId())) {
@@ -122,14 +117,12 @@ public class FormService {
         if (monthlySavingsString != null) {
             return Double.parseDouble(monthlySavingsString);
         } else {
-            // Return 0 or any other default value if the monthlySavings is not found or not provided in the response
             return 0.0;
         }
     }
 
 
     private double getMonthlyIncome(FormRequestDTO formResponse) {
-        // Assuming the monthly income is stored in the response with the questionId "monthlyIncome"
         String monthlyIncomeString = null;
         for (QuestionAnswerDTO questionAnswer : formResponse.getQuestionAnswers()) {
             if ("monthlyIncome".equals(questionAnswer.getQuestionId())) {
@@ -141,7 +134,6 @@ public class FormService {
         if (monthlyIncomeString != null) {
             return Double.parseDouble(monthlyIncomeString);
         } else {
-            // Return 0 or any other default value if the monthlyIncome is not found or not provided in the response
             return 0.0;
         }
     }
