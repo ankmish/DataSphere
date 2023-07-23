@@ -54,7 +54,7 @@ public class FormResponseDao {
         Document query = new Document("form_id", formId);
         List<Document> formResponses = formResponseCollection.find(query).into(new ArrayList<>());
         for (Document formResponseDoc : formResponses) {
-            List<ObjectId> ruleObjectIds = (List<ObjectId>) formResponseDoc.get("ruleIds");
+            List<ObjectId> ruleObjectIds = (List<ObjectId>) formResponseDoc.get("rule_ids");
             if (ruleObjectIds != null && !ruleObjectIds.isEmpty()) {
                 for (ObjectId ruleObjectId : ruleObjectIds) {
                     ruleIds.add(ruleObjectId.toString());
@@ -62,5 +62,10 @@ public class FormResponseDao {
             }
         }
         return ruleIds;
+    }
+
+    public List<Document> findFormByFormId(String formId) {
+        Document query = new Document("form_id", formId);
+        return formResponseCollection.find(query).into(new ArrayList<>());
     }
 }

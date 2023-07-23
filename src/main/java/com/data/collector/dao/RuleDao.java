@@ -17,8 +17,11 @@ import org.springframework.stereotype.Repository;
 public class RuleDao {
     private final MongoCollection<Document> ruleCollection;
 
+    private MongoClient mongoClient;
+
     @Autowired
     public RuleDao(MongoClient mongoClient, String databaseName) {
+        this.mongoClient = mongoClient;
         MongoDatabase saasDB = mongoClient.getDatabase(databaseName);
         this.ruleCollection = saasDB.getCollection("rules");
     }
@@ -85,6 +88,16 @@ public class RuleDao {
             return ruleFromDocument(ruleDocument);
         }
         return null;
+    }
+
+    public List<Rule> findRuleByNameAndPartnerId(String name, String partnerId) {
+        List<Rule> rules = new ArrayList<>();
+        Document query = new Document("name", name).append("partner_id", partnerId);
+        FindIterable<Document> ruleDocuments = ruleCollection.find(query);
+        for (Document ruleDocument : ruleDocuments) {
+            rules.add(ruleFromDocument(ruleDocument));
+        }
+        return rules;
     }
 
     private Rule ruleFromDocument(Document ruleDocument) {

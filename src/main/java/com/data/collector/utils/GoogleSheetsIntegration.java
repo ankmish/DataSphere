@@ -5,6 +5,7 @@ import com.data.collector.dto.FormRequestDTO;
 import com.data.collector.dto.QuestionAnswerDTO;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 import java.io.IOException;
@@ -13,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This is to inject data into google sheet
+ */
 public class GoogleSheetsIntegration {
 
     // Replace SPREADSHEET_ID with your Google Sheets spreadsheet ID
@@ -20,9 +24,9 @@ public class GoogleSheetsIntegration {
 
     public static void exportToGoogleSheets(FormRequestDTO formResponse) {
         try {
-            // Get the authenticated credentials
-            Credential credentials = GoogleSheetsClient.getCredentials();
-            Sheets sheetsService = new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(), GoogleSheetsClient.JSON_FACTORY, credentials)
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Credential credentials = GoogleSheetsClient.getCredentials(HTTP_TRANSPORT);
+            Sheets sheetsService = new Sheets.Builder(HTTP_TRANSPORT, GoogleSheetsClient.JSON_FACTORY, credentials)
                     .setApplicationName(GoogleSheetsClient.APPLICATION_NAME)
                     .build();
 
@@ -43,7 +47,7 @@ public class GoogleSheetsIntegration {
             rowData.add(formResponse.getFormId());
             for (Object questionId : headerRow.subList(1, headerRow.size())) {
                 String answer = getAnswerForQuestion(formResponse, questionId.toString());
-                rowData.add(answer != null ? answer : ""); // Add the answer to the data row
+                rowData.add(answer != null ? answer : "");
             }
             data.add(rowData);
 
@@ -81,7 +85,8 @@ public class GoogleSheetsIntegration {
     private static void createBarChart(String chartRange) {
         try {
             // Get the authenticated credentials
-            Credential credentials = GoogleSheetsClient.getCredentials();
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Credential credentials = GoogleSheetsClient.getCredentials(HTTP_TRANSPORT);
             Sheets sheetsService = new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(), GoogleSheetsClient.JSON_FACTORY, credentials)
                     .setApplicationName(GoogleSheetsClient.APPLICATION_NAME)
                     .build();
