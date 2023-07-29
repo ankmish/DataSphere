@@ -54,7 +54,7 @@ For implementation below are assumptions:
 
 
 ## High Level Design
-![DataSphere drawio](https://github.com/cef1998/DataSphere/assets/33161970/faec90be-4fcb-4029-b085-abd2513e65fd)
+![DataSphere drawio](https://github.com/cef1998/DataSphere/assets/33161970/c703411a-a722-4e3a-8557-254096343485)
 
 ## Low Level Design
 
